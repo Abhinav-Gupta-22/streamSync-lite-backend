@@ -47,9 +47,22 @@ Set these in your Vercel project settings:
 ## Deployment Steps
 
 1. Connect your GitHub repository to Vercel
-2. Set the **Root Directory** to `backend` in Vercel project settings
-3. Set all environment variables in Vercel dashboard
-4. Deploy
+2. **IMPORTANT**: Set the **Root Directory** to `backend` in Vercel project settings:
+   - Go to Project Settings → General
+   - Find "Root Directory" section
+   - Click "Edit" and set it to `backend`
+   - Save
+3. Set all environment variables in Vercel dashboard (Settings → Environment Variables)
+4. Deploy (push to GitHub or trigger manual deployment)
+
+## Vercel Project Settings Checklist
+
+- [ ] Root Directory set to `backend`
+- [ ] Framework Preset: "Other" or "None"
+- [ ] Build Command: `npm run build` (optional, Vercel will auto-detect)
+- [ ] Output Directory: Leave empty (not needed for serverless)
+- [ ] Install Command: `npm install`
+- [ ] Node.js Version: 18.x or higher
 
 ## Important Notes
 

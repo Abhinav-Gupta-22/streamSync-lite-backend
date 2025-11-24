@@ -1,15 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { AppModule } from '../src/app.module';
-import * as express from 'express';
+import express, { Request, Response } from 'express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import { setupLogger } from '../src/common/logger/logger.config';
 
-let cachedApp: express.Express;
+let cachedApp: express.Application;
 
-async function createApp(): Promise<express.Express> {
+async function createApp(): Promise<express.Application> {
   if (cachedApp) {
     return cachedApp;
   }
@@ -55,8 +55,16 @@ async function createApp(): Promise<express.Express> {
   return expressApp;
 }
 
-export default async function handler(req: express.Request, res: express.Response) {
-  const app = await createApp();
-  return app(req, res);
+export default async function handler(req: Request, res: Response) {
+  try {
+    const app = await createApp();
+    return app(req, res);
+  } catch (error) {
+    console.error('Error in serverless function:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
 }
 
