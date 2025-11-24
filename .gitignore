@@ -1,0 +1,107 @@
+# Compiled output
+/dist
+/node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Tests
+/coverage
+/.nyc_output
+.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+.env.staging
+
+# Firebase
+firebase-adminsdk-*.json
+*-firebase-adminsdk-*.json
+serviceAccountKey.json
+
+# Build artifacts
+*.tsbuildinfo
+*.map
+build/
+out/
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+database.sqlite
+database.sqlite3
+
+# PM2 ecosystem config (local overrides only)
+ecosystem.config.local.js
+
+# Docker (override files only)
+docker-compose.override.yml
+.docker/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+.cache/
+
+# Coverage and testing
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+
+# Config files with sensitive data (local overrides only)
+.eslintrc.local.json
+.prettierrc.local
+
+# Deployment specific folders
+.vercel
+.netlify
+.railway
+.now
+
+# Source maps (not needed in production)
+*.js.map
+*.d.ts.map
+
+# Local development
+.local/
+local/
+dev/
