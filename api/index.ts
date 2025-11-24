@@ -45,7 +45,8 @@ async function createApp(): Promise<express.Application> {
     }),
   );
 
-  // API prefix
+  // API prefix - Note: Vercel already routes to /api, so we don't need to add it again
+  // But we'll keep it for consistency with local development
   app.setGlobalPrefix(apiPrefix);
 
   // Initialize the app
