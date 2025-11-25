@@ -15,14 +15,22 @@ export class UsersController {
     @CurrentUser() user: any,
     @Body() registerFcmTokenDto: RegisterFcmTokenDto,
   ) {
+    console.log(`📥 FCM Token registration request for user: ${id}`);
     if (user.id !== id) {
       throw new Error('Unauthorized');
     }
-    return this.usersService.registerFcmToken(
-      id,
-      registerFcmTokenDto.token,
-      registerFcmTokenDto.platform,
-    );
+    try {
+      const result = await this.usersService.registerFcmToken(
+        id,
+        registerFcmTokenDto.token,
+        registerFcmTokenDto.platform,
+      );
+      console.log(`✅ FCM Token registered successfully for user: ${id}`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Error registering FCM token for user ${id}:`, error);
+      throw error;
+    }
   }
 
   @Delete(':id/fcmToken')

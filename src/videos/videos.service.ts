@@ -111,19 +111,39 @@ export class VideosService {
       return cachedVideos;
     }
 
+    // Check if API key is configured
+    if (!this.youtubeApiKey) {
+      console.warn('⚠️  YouTube API key not configured. Returning cached videos only.');
+      return cachedVideos.length > 0 ? cachedVideos : [];
+    }
+
     // Fetch from YouTube API
-    const response = await firstValueFrom(
-      this.httpService.get('https://www.googleapis.com/youtube/v3/search', {
-        params: {
-          part: 'snippet',
-          channelId: resolvedChannelId,
-          maxResults: limit,
-          order: 'date',
-          type: 'video',
-          key: this.youtubeApiKey,
-        },
-      }),
-    );
+    let response;
+    try {
+      response = await firstValueFrom(
+        this.httpService.get('https://www.googleapis.com/youtube/v3/search', {
+          params: {
+            part: 'snippet',
+            channelId: resolvedChannelId,
+            maxResults: limit,
+            order: 'date',
+            type: 'video',
+            key: this.youtubeApiKey,
+          },
+        }),
+      );
+    } catch (error: any) {
+      console.error('❌ YouTube API Error:', error.response?.status, error.response?.statusText);
+      if (error.response?.status === 403) {
+        console.error('   YouTube API returned 403. Possible reasons:');
+        console.error('   1. API key is invalid or missing');
+        console.error('   2. API quota exceeded');
+        console.error('   3. API key doesn\'t have required permissions');
+        console.error('   Returning cached videos...');
+      }
+      // Return cached videos if API fails
+      return cachedVideos.length > 0 ? cachedVideos : [];
+    }
 
     if (!response.data.items || response.data.items.length === 0) {
       return cachedVideos; // Return cached videos if no new videos found
@@ -132,15 +152,22 @@ export class VideosService {
     const videoIds = response.data.items.map((item: any) => item.id.videoId).join(',');
 
     // Get video details
-    const detailsResponse = await firstValueFrom(
-      this.httpService.get('https://www.googleapis.com/youtube/v3/videos', {
-        params: {
-          part: 'snippet,contentDetails',
-          id: videoIds,
-          key: this.youtubeApiKey,
-        },
-      }),
-    );
+    let detailsResponse;
+    try {
+      detailsResponse = await firstValueFrom(
+        this.httpService.get('https://www.googleapis.com/youtube/v3/videos', {
+          params: {
+            part: 'snippet,contentDetails',
+            id: videoIds,
+            key: this.youtubeApiKey,
+          },
+        }),
+      );
+    } catch (error: any) {
+      console.error('❌ YouTube API Error (video details):', error.response?.status);
+      // Return cached videos if API fails
+      return cachedVideos.length > 0 ? cachedVideos : [];
+    }
 
     // Save to database
     const videos: Video[] = [];

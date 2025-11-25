@@ -34,28 +34,49 @@ export class UsersService {
   }
 
   async registerFcmToken(userId: string, token: string, platform: string): Promise<FcmToken> {
-    // Check if token already exists
-    const existingToken = await this.fcmTokensRepository.findOne({
-      where: { token },
-    });
-
-    if (existingToken) {
-      // Update existing token if user changed
-      if (existingToken.userId !== userId) {
-        existingToken.userId = userId;
-        existingToken.platform = platform;
-        return this.fcmTokensRepository.save(existingToken);
+    try {
+      // Check if repository is connected (quick check)
+      if (!this.fcmTokensRepository.manager.connection?.isInitialized) {
+        console.error('❌ Database connection not initialized');
+        throw new Error('Database connection not available. Please check your database configuration.');
       }
-      return existingToken;
-    }
 
-    // Create new token
-    const fcmToken = this.fcmTokensRepository.create({
-      userId,
-      token,
-      platform,
-    });
-    return this.fcmTokensRepository.save(fcmToken);
+      // Check if token already exists with timeout
+      const existingToken = await Promise.race([
+        this.fcmTokensRepository.findOne({
+          where: { token },
+        }),
+        new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error('Database query timeout')), 10000),
+        ),
+      ]) as FcmToken | null;
+
+      if (existingToken) {
+        // Update existing token if user changed
+        if (existingToken.userId !== userId) {
+          existingToken.userId = userId;
+          existingToken.platform = platform;
+          return this.fcmTokensRepository.save(existingToken);
+        }
+        return existingToken;
+      }
+
+      // Create new token
+      const fcmToken = this.fcmTokensRepository.create({
+        userId,
+        token,
+        platform,
+      });
+      return this.fcmTokensRepository.save(fcmToken);
+    } catch (error) {
+      console.error('❌ Database error in registerFcmToken:', error);
+      // Re-throw with more context
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('timeout') || errorMessage.includes('ECONNREFUSED') || errorMessage.includes('not available')) {
+        throw new Error('Database connection failed. Please check if your database server is running and configured correctly.');
+      }
+      throw new Error(`Failed to register FCM token: ${errorMessage}`);
+    }
   }
 
   async deleteFcmToken(userId: string, token: string): Promise<void> {

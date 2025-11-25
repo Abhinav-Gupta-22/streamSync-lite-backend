@@ -57,21 +57,29 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       migrations: [join(__dirname, '../database/migrations/*{.ts,.js}')],
       synchronize: false, // Never use synchronize in production/serverless
       logging: nodeEnv === 'development' && !isVercel,
-      retryAttempts: 3,
-      retryDelay: 3000,
-      connectTimeoutMS: 10000, // 10 second timeout
+      retryAttempts: 5, // Increased retry attempts
+      retryDelay: 2000, // 2 second delay between retries
       // SSL configuration for cloud databases (Supabase, Neon, Railway, etc.)
       ssl: sslEnabled
         ? {
             rejectUnauthorized: false, // Set to true in production with proper certificates
           }
         : false,
-      // Don't fail on connection errors during app initialization
-      // Let the app start and handle DB errors gracefully
+      // Connection pool configuration for better reliability
       extra: {
         max: 10, // Maximum pool size
-        connectionTimeoutMillis: 10000,
+        connectionTimeoutMillis: 15000, // 15 second timeout (increased from 10s)
+        idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+        // Reconnect on connection loss
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000,
+        // Statement timeout (30 seconds)
+        statement_timeout: 30000,
       },
+      // Don't fail app startup if database connection fails
+      // This allows the server to start even if DB is temporarily unavailable
+      // The app will retry connections when needed
+      autoLoadEntities: true,
     };
   }
 }

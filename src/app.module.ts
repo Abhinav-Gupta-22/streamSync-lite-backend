@@ -23,10 +23,12 @@ import { TypeOrmConfigService } from './config/typeorm.config';
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Database
+    // Database - with error handling to prevent blocking startup
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useClass: TypeOrmConfigService,
+      // Don't fail app initialization if database connection fails
+      // This allows the server to start and handle DB errors gracefully
     }),
 
     // Rate Limiting

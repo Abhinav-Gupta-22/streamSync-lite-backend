@@ -26,7 +26,7 @@ export class Video {
   @Column({ name: 'channel_id' })
   channelId: string;
 
-  @Column({ name: 'published_at', type: 'timestamp' })
+  @Column({ name: 'published_at', type: 'datetime' })
   publishedAt: Date;
 
   @Column({ name: 'duration_seconds', nullable: true })
