@@ -56,7 +56,7 @@ async function bootstrap() {
     );
 
     // API prefix
-    app.setGlobalPrefix(apiPrefix);
+    // app.setGlobalPrefix(apiPrefix);
 
     console.log('🌐 Starting HTTP server...');
     // Listen on all network interfaces (0.0.0.0) to allow access from emulators/devices
