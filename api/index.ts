@@ -112,7 +112,8 @@ async function createApp(): Promise<express.Application> {
   }
 }
 
-export default async function handler(req: Request, res: Response) {
+// Vercel serverless function handler
+const handler = async (req: Request, res: Response) => {
   console.log('📥 Request received:', {
     method: req.method,
     url: req.url,
@@ -145,4 +146,7 @@ export default async function handler(req: Request, res: Response) {
       });
     }
   }
-}
+};
+
+// Export as default for Vercel
+export default handler;
