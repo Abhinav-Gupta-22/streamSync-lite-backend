@@ -8,26 +8,10 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
   constructor(private configService: ConfigService) {}
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
-    const dbType = this.configService.get('database.type') || 'postgres';
     const nodeEnv = this.configService.get('NODE_ENV') || process.env.NODE_ENV || 'development';
     const isVercel = !!process.env.VERCEL;
 
-    // SQLite configuration (for local development only - not for Vercel)
-    if (dbType === 'sqlite' && !isVercel) {
-      return {
-        type: 'better-sqlite3',
-        database:
-          this.configService.get<string>('database.database') ||
-          join(process.cwd(), 'database.sqlite'),
-        entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
-        migrations: [join(__dirname, '../database/migrations/*{.ts,.js}')],
-        synchronize: nodeEnv === 'development',
-        logging: nodeEnv === 'development',
-        retryAttempts: 0, // SQLite doesn't need retries
-      };
-    }
-
-    // PostgreSQL configuration (for production, Docker, or free tier cloud services)
+    // PostgreSQL configuration (required for all environments)
     const sslEnabled = this.configService.get<string>('database.ssl') === 'true';
     const host = this.configService.get<string>('database.host');
     const username = this.configService.get<string>('database.username');
@@ -55,7 +39,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       database,
       entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
       migrations: [join(__dirname, '../database/migrations/*{.ts,.js}')],
-      synchronize: false, // Never use synchronize in production/serverless
+      synchronize: nodeEnv === 'development' && !isVercel, // Auto-create tables in development only
       logging: nodeEnv === 'development' && !isVercel,
       retryAttempts: 5, // Increased retry attempts
       retryDelay: 2000, // 2 second delay between retries

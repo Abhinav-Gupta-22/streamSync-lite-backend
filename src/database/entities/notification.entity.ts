@@ -32,7 +32,7 @@ export class Notification {
   @Column('simple-json', { nullable: true })
   metadata: Record<string, any>;
 
-  @Column({ name: 'received_at', type: 'datetime', nullable: true })
+  @Column({ name: 'received_at', type: 'timestamptz', nullable: true })
   receivedAt: Date;
 
   @Column({ name: 'is_read', default: false })

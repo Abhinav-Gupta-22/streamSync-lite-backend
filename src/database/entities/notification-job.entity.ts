@@ -51,6 +51,6 @@ export class NotificationJob {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @Column({ name: 'processing_at', type: 'datetime', nullable: true })
+  @Column({ name: 'processing_at', type: 'timestamptz', nullable: true })
   processingAt: Date;
 }
