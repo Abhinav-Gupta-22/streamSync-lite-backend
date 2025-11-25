@@ -18,13 +18,16 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
 
     // PostgreSQL configuration (required for all environments)
     const sslEnabled = this.configService.get<string>('database.ssl') === 'true';
+    const databaseUrl = this.configService.get<string>('database.url') || process.env.DATABASE_URL;
+    const hasConnectionUrl = !!databaseUrl;
     const host = this.configService.get<string>('database.host');
+    const port = this.configService.get<number>('database.port') || 5432;
     const username = this.configService.get<string>('database.username');
     const password = this.configService.get<string>('database.password');
     const database = this.configService.get<string>('database.database');
 
     // Validate required PostgreSQL connection parameters
-    if (!host || !username || !password || !database) {
+    if (!hasConnectionUrl && (!host || !username || !password || !database)) {
       console.error('❌ Missing required database environment variables:');
       console.error('  DB_HOST:', host ? '✓' : '✗ MISSING');
       console.error('  DB_USERNAME:', username ? '✓' : '✗ MISSING');
@@ -50,13 +53,19 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       console.log('   To enable: Set DB_SYNC=true in your .env file.');
     }
 
+    const connectionOverrides = hasConnectionUrl
+      ? { url: databaseUrl }
+      : {
+          host,
+          port,
+          username,
+          password,
+          database,
+        };
+
     return {
       type: 'postgres',
-      host,
-      port: this.configService.get<number>('database.port') || 5432,
-      username,
-      password,
-      database,
+      ...connectionOverrides,
       entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
       migrations: [join(__dirname, '../database/migrations/*{.ts,.js}')],
       synchronize: shouldSynchronize, // Only enable if explicitly requested
