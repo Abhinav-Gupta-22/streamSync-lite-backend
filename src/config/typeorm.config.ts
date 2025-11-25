@@ -11,6 +11,11 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
     const nodeEnv = this.configService.get('NODE_ENV') || process.env.NODE_ENV || 'development';
     const isVercel = !!process.env.VERCEL;
 
+    // Check if synchronize is explicitly enabled via environment variable
+    // Default to false for safety (prevents schema conflicts)
+    const dbSync = this.configService.get<string>('database.sync') || process.env.DB_SYNC;
+    const synchronizeEnabled = dbSync === 'true' || dbSync === '1';
+
     // PostgreSQL configuration (required for all environments)
     const sslEnabled = this.configService.get<string>('database.ssl') === 'true';
     const host = this.configService.get<string>('database.host');
@@ -30,6 +35,21 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       );
     }
 
+    // Determine if synchronize should be enabled
+    // Default to FALSE for safety (prevents schema conflicts)
+    // Only enable if explicitly set via DB_SYNC=true AND not on Vercel
+    const shouldSynchronize = !isVercel && synchronizeEnabled;
+
+    if (shouldSynchronize) {
+      console.warn(
+        '⚠️  WARNING: Database synchronize is ENABLED. This will auto-modify your database schema.',
+      );
+      console.warn('   If you see schema errors, set DB_SYNC=false in your .env file.');
+    } else {
+      console.log('✅ Database synchronize is DISABLED (safer for production).');
+      console.log('   To enable: Set DB_SYNC=true in your .env file.');
+    }
+
     return {
       type: 'postgres',
       host,
@@ -39,7 +59,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       database,
       entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
       migrations: [join(__dirname, '../database/migrations/*{.ts,.js}')],
-      synchronize: nodeEnv === 'development' && !isVercel, // Auto-create tables in development only
+      synchronize: shouldSynchronize, // Only enable if explicitly requested
       logging: nodeEnv === 'development' && !isVercel,
       retryAttempts: 5, // Increased retry attempts
       retryDelay: 2000, // 2 second delay between retries

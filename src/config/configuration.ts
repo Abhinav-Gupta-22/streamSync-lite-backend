@@ -11,6 +11,7 @@ export default () => ({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     ssl: process.env.DB_SSL || 'false', // Enable SSL for cloud databases
+    sync: process.env.DB_SYNC || 'false', // Enable schema synchronization (default: false for safety)
   },
 
   jwt: {
